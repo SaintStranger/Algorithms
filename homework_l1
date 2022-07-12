@@ -1,1 +1,145 @@
+#include <stdio.h>
+#include <math.h>
 
+// 1 Индекс массы тела
+void main() {
+
+    double weight;
+    double height;
+    
+    printf("Enter a body's weight (kg):");
+    scanf("%lf", &weight);
+    
+    printf("Enter a body's height (cm):");
+    scanf("%lf", &height);
+    
+    double index = weight / ((height / 100) * (height / 100));
+    
+    printf("index mass = %2lf\n", index);
+    
+}
+
+
+// 2 Максимальное из четырех чисел
+void main() {
+
+    int a, b, c, d;
+    
+    printf("Input number a:");
+    scanf("%d", &a);
+    
+    printf("Input number b:");
+    scanf("%d", &b);
+    
+    printf("Input number c:");
+    scanf("%d", &c);
+    
+    printf("Input number d:");
+    scanf("%d", &d);
+    
+    int max1;
+    int max2;
+    
+    
+    //Можно вынести в одну функцию, но это домашняя работа - подумал,
+    // что ход мыслей очвевиднее будет показан
+    if (a > b)
+    {
+        max1 = a;
+    } else {
+        max1 = b;
+    };
+    
+    
+    if (c > d)
+    {
+        max2 = c;
+    } else {
+        max2 = d;
+    };
+    
+    
+    if (max1 > max2)
+    {
+        printf("Max number is %d", max1);
+    } else {
+        printf("Max number is %d", max2);
+    }
+    
+}
+
+
+// 3 Обмен значениями двух переменных
+void main() {
+    
+    int a;
+    int b;
+    int c;
+
+    
+    printf("Enter first value:");
+    scanf("%d", &a);
+    
+    printf("Enter second value:");
+    scanf("%d", &b);
+    
+    
+    //Вариант 1
+    c = a;
+    a = b;
+    b = c;
+    
+    printf("\nFirst option \nfirst value and second value are: %d, %d", a, b);
+    
+    
+    //Вариант 2
+    a = a + b;
+    b = a - b;
+    a = a - b;
+    printf("\n\nSecond option \nfirst value and second value are: %d, %d", a, b);
+    
+    
+    //Вариант 3
+    a = a * b;
+    b = a / b;
+    a = a / b;
+    printf("\n\nThird option \nfirst value and second value are: %d, %d", a, b);
+    
+}
+
+
+
+
+// 4 Корни квадратного уравнения
+void main() {
+    
+    //ax2 + bx + c = 0 - уравнение
+    
+    int a, b, c;
+    
+    printf("Enter variables of a quadratic equation \nenter voriable a:");
+    scanf("%d", &a);
+    
+    printf("enter voriable b:");
+    scanf("%d", &b);
+    
+    printf("enter voriable c:");
+    scanf("%d", &c);
+    
+    if ((b * b - 4 * a * c) >= 0)
+    {
+        double x1 = ( -1 * b + sqrt(b * b - 4 * a * c) ) / (2 * a);
+        double x2 = ( -1 * b - sqrt(b * b - 4 * a * c) ) / (2 * a);
+        
+        if (x1 == x2) {
+            printf("Both roots are equal %2lf", x1);
+        } else {
+            printf("One root is %2lf", x1);
+            printf("Another root is %2lf", x2);
+        }
+
+    } else {
+        printf("There are no roots");
+    }
+    
+}
