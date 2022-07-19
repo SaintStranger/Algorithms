@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+//1. Реализовать функцию перевода из десятичной системы в двоичную, используя рекурсию.
+
+void recursive(int n, char stran[10]) {
+    if (n > 0) {
+        strcat(stran, (n % 2) ? "1" : "0");
+        recursive (n / 2, stran);
+    } else {
+        return;
+    }
+
+
+    //Вся следующая часть нужна для того, чтобы развернуть число зеркально,
+    //поскольку в двоичной системе отображается неправильно
+    int len = strlen(stran);
+
+    int index;
+
+    for (index = len; index > 0; index--)
+    putchar(stran[index-1]);
+    putchar('\n');
+    stran[isspace('\n')] = '\0';
+
+
+    printf("%s", stran);
+
+}
+
+int main() {
+
+    int n;
+    char stran[10];
+    printf("Enter a decimal number: ");
+    scanf("%d", &n);
+
+    recursive(n, stran);
+
+    return 0;
+}
+
+
+
+// 2. Реализовать функцию возведения числа a в степень b:
+
+
+//  a. без рекурсии;
+int main(int a, int deg) {
+    printf("Enter any number: ");
+    scanf("%d", &a);
+
+    printf("Enter a degree: ");
+    scanf("%d", &deg);
+
+    int i;
+    int result = 1;
+    for(i = 0; i < deg; i++) {
+        result = result * a;
+    }
+    printf("%d", result);
+    return 0;
+}
+
+
+//  b. рекурсивно;
+
+int powindegree(int a, int deg) {
+
+    int midterm;
+
+        if(deg) {
+            midterm = powindegree(a, deg-1) * a;
+            return midterm;
+        } else {
+            return 1;
+        };
+}
+
+int main() {
+
+    int a;
+    int deg;
+
+    int result;
+
+    printf("Enter any number: ");
+    scanf("%d", &a);
+
+    printf("Enter a degree: ");
+    scanf("%d", &deg);
+
+    result = powindegree(a, deg);
+
+    printf("%d", result);
+
+    return 0;
+
+}
+
+
+//  c. *рекурсивно, используя свойство чётности степени.
+
+int evendegree(int a, int deg) {
+
+    int midterm;
+
+    if(!deg) {
+        return 1;
+    };
+    if (deg % 2) {
+        return evendegree(a, deg - 1) * a;
+    } else {
+        midterm = evendegree(a, deg / 2);
+        return midterm * midterm;
+    };
+
+}
+
+int main() {
+
+    int a;
+    int deg;
+
+    int result;
+
+    printf("Enter any number: ");
+    scanf("%d", &a);
+
+    printf("Enter a degree: ");
+    scanf("%d", &deg);
+
+    result = evendegree(a, deg);
+
+    printf("%d", result);
+
+    return 0;
+
+}
