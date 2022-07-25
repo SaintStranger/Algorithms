@@ -1,0 +1,196 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+
+// 1 Попробовать оптимизировать пузырьковую сортировку. Сравнить количество операций сравнения оптимизированной и не оптимизированной программы.
+
+void bubleSortUnoptimized(int* array, int length);
+void printArray(int array[], int length);
+
+
+int main()
+{
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int g;
+    int h;
+    int i;
+    int j;
+    
+    
+    printf("Enter a random sequence of ten numbers (one by one) to add them into an array:");
+    scanf("%d\n", &a);
+    scanf("%d\n", &b);
+    scanf("%d\n", &c);
+    scanf("%d\n", &d);
+    scanf("%d\n", &e);
+    scanf("%d\n", &f);
+    scanf("%d\n", &g);
+    scanf("%d\n", &h);
+    scanf("%d\n", &i);
+    scanf("%d\n", &j);
+
+    int array[] = { a, b, c, d, e, f, g, h, i, j };
+    let length = sizeof(array) / sizeof(array[0]);
+    
+    printf("The array before:\n");
+    printArray(array, length);
+    
+    bubleSortUnoptimized(&array, length);
+    
+    printf("The array after:\n");
+    printArray(array, length);
+    
+    bubleSort(&array, length)
+    
+    
+    
+    printf("Enter a number you want to find in the array:");
+    scanf("%d\n", &tbFound);
+    
+    let result = binarySearch(array, length, tbFound);
+    printf("result is, %d", result);
+
+    return 0;
+}
+
+// Пузырьковая сортировка до оптимизации
+
+void bubleSortUnoptimized(int* array, int length)
+{
+    int isChanged = 1;
+    int changesCounter = 0;
+    
+    while (counter != 0) {
+        
+        isChanged = 0;
+        
+        for (int i = 0; i < length - 1; i++) {
+            
+            if (array[i] > array[i + 1]) {
+                
+                swap(array[i], array[i + 1]);
+                
+                isChanges = 1;
+                changesCounter = changesCounter + 1;
+            }
+            
+        }
+    }
+    
+    printf("The number of changer is:\n");
+    printf("%d", changesCounter);
+
+}
+
+// Пузырьковая сортировка после оптимизации
+
+void bubleSort(int* array, int length)
+{
+    int max = 0;
+    int changesCounter = 0;
+    
+    while (length > 0) {
+        
+        max = 0;
+        
+        for (int i = 1; i < length; i++) {
+            
+            if (array[i - 1] > array[i]) {
+                
+                swap(array[i], array[i + 1]);
+                
+                max = i;
+                changesCounter = changesCounter + 1;
+            }
+            
+        }
+        
+        length = max;
+    }
+    
+    printf("The number of changer is:\n");
+    printf("%d", changesCounter);
+
+}
+
+
+
+// 2 Реализовать шейкерную сортировку.
+
+void cocktailSort(int* array, int length)
+{
+    int left = 0;
+    int right = length;
+    int lastSwap;
+    
+    while (left < right) {
+        
+        lastSwap = 0;
+        
+        for (int il = left; il < right; il++) {
+            
+            if (array[il] > array[il + 1]) {
+                swap(array[il], array[il + 1])
+                
+                lastSwap = il;
+            }
+            
+        }
+        
+        right = lastSwap;
+        
+        for (int ir = right; ir > left; ir--) {
+            
+            if (array[ir] < array[ir - 1]) {
+                swap(array[ir], array[ir - 1]);
+                
+                lastSwap = ir;
+            }
+            
+        }
+        
+        left = lastSwap;
+    }
+    
+}
+
+void swap(int a, int b) {
+    let temp = a;
+    a = b;
+    b = temp;
+}
+
+// 3 Реализовать бинарный алгоритм поиска в виде функции, которой передается отсортированный массив. Функция возвращает индекс найденного элемента или -1, если элемент не найден.
+
+int binarySearch (int* array, int length, int theNumber) {
+    
+    int end = -1;
+
+
+    if (array[0] > theNumber || array[length - 1] < theNumber) return end;
+    if (array[0] == y) return array[0];
+    if (array[length - 1] == y) return array[length - 1];
+
+    int left = 0;
+    int right = array[length - 1];
+    int mid = left + (right - left) / 2;
+    
+    while (left <= right && array[mid] != theNumber) {
+        
+        if (array[mid] < theNumber) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+            mid = left + (right - left) / 2;
+        }
+        
+    } else {
+        return mid;
+    }
+
+}
