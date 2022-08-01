@@ -1,0 +1,483 @@
+#include <stdio.h>
+#include <malloc.h>
+#include <stdlib.h>
+
+
+
+#define T char
+
+
+typedef struct tagNode * pNode;
+
+typedef struct tagNode 
+{
+	T value;
+	pNode next;
+} Node;
+
+// Тип структуры стек
+typedef struct tagStack 
+{
+	pNode head;
+	int size;
+	int maxSize;
+} Stack;
+
+void push(Stack *stack, T value)
+{
+	if (stack->size == stack->maxSize)
+	{
+		printf("The stack is overflown");
+		return;
+	}
+	pNode tmp = (pNode)malloc(sizeof(Node));
+	tmp->value = value;
+	tmp->next = stack->head;
+	stack->head = tmp;
+	stack->size++;
+};
+
+void pop(Stack *stack, T* value)
+{
+	if (stack->size == 0)
+	{
+		printf("The stack is empty");
+		return;
+	}
+	pNode next = NULL;
+	*value = stack->head->value;
+	next = stack->head;
+	stack->head = stack->head->next;
+	free(next);
+	stack->size--;
+};
+
+void peekStack(Stack *stack, T* value)
+{
+	if (stack->size == 0)
+	{
+		printf("The stack is empty");
+		return;
+	}
+	*value = stack->head->value;
+};
+
+void printStack(Stack *stack)
+{
+	pNode current = stack->head;
+	while (current != NULL)
+	{
+		printf("%i", current->value);
+		current = current->next;
+	}
+};
+
+void initStack(Stack *stack)
+{
+	stack->maxSize = 100;
+	stack->size = 0;
+	stack->head = NULL;
+};
+
+void convertToBinRec(Stack *stack, long n)
+{
+	if (n <= 0)
+		return;
+	push(stack, n % 2);
+	convertToBinRec(stack, n / 2);
+};
+
+void printBin(Stack *stack)
+{
+	while (stack->size > 0)
+	{
+		T value;
+		pop(stack, &value);
+		printf("%i", value);
+	}
+};
+
+int isNumber(char *str)
+{
+	int i = 0;
+	while (str[i] != '\0')
+		if (!isdigit(str[i++]))
+			return 0;
+	return 1;
+};
+
+int indexOf(char *str, char elem)
+{
+	int i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] == elem)
+			return i;
+		i++;
+	}
+	return -1;
+};
+
+
+// Тип структуры очередь
+typedef struct tagQueue
+{
+	pNode front;
+	pNode back;
+	int size;
+	int maxSize;
+} Queue;
+
+typedef Queue * pQueue;
+
+
+void Enqueue(pQueue queue, T value)
+{
+	if (queue->size == queue->maxSize)
+	{
+		printf("The queue is full\n");
+		return;
+	}
+	pNode tmp = (pNode)malloc(sizeof(Node));
+	tmp->value = value;
+	if (queue->size == 0)
+		queue->front = tmp;
+	else
+	{
+		queue->back->next = tmp;
+		tmp->next = NULL;
+	}
+	queue->back = tmp;
+	queue->size++;
+};
+
+
+void printCharQueue(pQueue queue)
+{
+	pNode current = queue->front;
+	while (current != NULL)
+	{
+		printf("%c\n", current->value);
+		current = current->next;
+	}
+};
+
+
+void initQueue(pQueue queue)
+{
+	queue->maxSize = 100;
+	queue->size = 0;
+	queue->front = NULL;
+	queue->back = NULL;
+};
+
+int checkMinusPlus(Stack *stack, pQueue queue, char elem)
+{
+	int isExit = 0;
+	if (stack->size > 0)
+	{
+		T prev;
+		peekStack(stack, &prev);
+		if (prev == '(')
+		{
+			push(stack, elem);
+			isExit = 1;
+		}
+		else
+		{
+			pop(stack, &prev);
+			Enqueue(queue, prev);
+		}
+	}
+	else
+	{
+		push(stack, elem);
+		isExit = 1;
+	}
+	return isExit;
+};
+
+int checkMultiplyDivide(Stack *stack, pQueue queue, char elem)
+{
+	int isExit = 0;
+	if (stack->size > 0)
+	{
+		T prev;
+		peekStack(stack, &prev);
+		if (indexOf("(+-", prev))
+		{
+			push(stack, elem);
+			isExit = 1;
+		}
+		else
+		{
+			pop(stack, &prev);
+			Enqueue(queue, prev);
+		}
+	}
+	else
+	{
+		push(stack, elem);
+		isExit = 1;
+	}
+	return isExit;
+};
+
+int checkLeftBracket(Stack *stack, pQueue queue, char elem)
+{
+	push(stack, elem);
+	return 1;
+};
+
+int checkRightBracket(Stack *stack, pQueue queue)
+{
+	int isExit = 0;
+	if (stack->size > 0)
+	{
+		T prev;
+		pop(stack, &prev);
+		if (prev != '(')
+			Enqueue(queue, prev);
+		else
+			isExit = 1;
+	}
+	else
+	{
+		printf("An incorrect sequence\n");
+		isExit = -1;
+	}
+	return isExit;
+};
+
+
+
+
+
+//1. Реализовать перевод из десятичной в двоичную систему счисления с использованием стека.
+int main()
+{
+    Stack stack;
+
+	initStack(&stack);
+
+	int number;
+	printf("Enter a decimal number:  ");
+	scanf("%d", &number);
+
+	printf("Result: \n");
+	convertToDecimal(&stack, number);
+	printNumber(&stack);
+	
+    return 0;
+};
+
+void convertToDecimal(Stack *stack, long n)
+{
+	if (n <= 0)
+		return;
+	push(stack, n % 2);
+	convertToDecimal(stack, n / 2);
+};
+
+void printNumber(Stack *stack)
+{
+	while (stack->size > 0)
+	{
+		T value;
+		pop(stack, &value);
+		printf("%i", value);
+	}
+};
+
+
+//2. Добавить в программу «реализация стека на основе односвязного списка» проверку на выделение памяти. 
+//Если память не выделяется, то выводится соответствующее сообщение.
+void push(Stack *stack, T value)
+{
+	if (stack->size == stack->maxSize)
+	{
+		printf("The stack is overflown\n");
+		return;
+	}
+	pNode tmp = (pNode)malloc(sizeof(Node));
+	if (tmp == NULL)
+	{
+		printf("No additional memory\n");
+		return;
+	}
+	tmp->value = value;
+	tmp->next = stack->head;
+	stack->head = tmp;
+	stack->size++;
+};
+
+
+//3. Написать программу, которая определяет, является ли введенная скобочная последовательность правильной. Примеры правильных скобочных выражений: 
+//(), ([])(), {}(), ([{}]), неправильных — )(, ())({), (, ])}), ([(]) для скобок [,(,{.
+int main()
+{
+    Stack stack;
+
+	char buffer[100] = "[ 2 / { 5 * ( 4 + 7 ) } ] ( )";
+	printf("Let's see what sequence is: ");
+	for (int i = 0; i < strlen(buffer); i++)
+	{
+		printf("%c", buffer[i]);
+	}
+	printf("\n");
+
+	int res = 0;
+
+	initStack(&stack);
+
+	for (int i = 0; i < strlen(buffer); i++)
+	{
+		char elem[100];
+		int j = 0;
+		while (buffer[i] != ' ' && buffer[i] != '\0')
+		{
+			elem[j++] = buffer[i++];
+		}
+		elem[j] = '\0';
+		T value;
+
+		switch (elem[0])
+		{
+		case '[':
+			push(&stack, elem[0]);
+			res++;
+			break;
+		case ']':
+			pop(&stack, &value);
+			if (value == '[')
+				res--;
+			break;
+		case '{':
+			push(&stack, elem[0]);
+			res++;
+			break;
+		case '}':
+			pop(&stack, &value);
+			if (value == '{')
+				res--;
+			break;
+		case '(':
+			push(&stack, elem[0]);
+			res++;
+			break;
+		case ')':
+			pop(&stack, &value);
+			if (value == '(')
+				res--;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+
+	printf("Result: \n");
+
+	printf(res > 0 ? "An incorrect one\n" : "A correct one\n");
+    return 0;
+
+};
+
+
+
+
+
+// **Реализовать алгоритм перевода из инфиксной записи арифметического выражения в постфиксную.
+int main()
+{
+	int res = 0;
+
+	Queue queue;
+	initQueue(&queue);
+	
+	Stack stack;
+	initStack(&stack);
+
+	char buffer[100] = "( 8 + 2 * 5 ) / ( 1 + 3 * 2 - 4 )";
+	printf("A test sequence: ");
+	for (int i = 0; i < strlen(buffer); i++)
+	{
+		printf("%c", buffer[i]);
+	}
+	printf("\n");
+
+
+	printf("Result: \n");
+
+	int isExit = 0;
+
+	for (int i = 0; i < strlen(buffer); i++)
+	{
+		if (isExit == -1)
+			break;
+
+		isExit = 0;
+
+		char elem[100];
+		int j = 0;
+		while (buffer[i] != ' ' && buffer[i] != '\0')
+		{
+			elem[j++] = buffer[i++];
+		}
+		elem[j] = '\0';
+
+		if (isNumber(elem))
+		{
+			Enqueue(&queue, *elem);
+		}
+		else
+		{
+			while (!isExit)
+			{
+				switch (elem[0])
+				{
+				case '+':
+					isExit = checkMinusPlus(&stack, &queue, elem[0]);
+					break;
+				case '-':
+					isExit = checkMinusPlus(&stack, &queue, elem[0]);
+					break;
+				case '*':
+					isExit = checkMultiplyDivide(&stack, &queue, elem[0]);
+					break;
+				case '/':
+					isExit = checkMultiplyDivide(&stack, &queue, elem[0]);
+					break;
+				case '(':
+					isExit = checkLeftBracket(&stack, &queue, elem[0]);
+					break;
+				case ')':
+					isExit = checkRightBracket(&stack, &queue);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		if (buffer[i] == '\0')
+		{
+			if (stack.size > 0)
+			{
+				T prev;
+				pop(&stack, &prev);
+				if (prev == '(')
+				{
+					res = -1;
+					printf("An incorrect sequence\n");
+					break;
+				}
+				Enqueue(&queue, prev);
+			}
+		}
+	}
+
+	printCharQueue(&queue);
+    return 0;
+};
