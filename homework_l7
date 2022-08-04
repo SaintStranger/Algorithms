@@ -1,0 +1,377 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+
+typedef u_int bool;
+#define true 1
+#define false 0
+
+typedef struct tagQueueNode * pQueueNode;
+
+typedef struct tagQueueNode
+{
+	int num;
+	pQueueNode next;
+
+} QueueNode;
+
+typedef struct tagQueue
+{
+	pQueueNode front;
+	pQueueNode back;
+	int size;
+	int maxSize;
+
+} Queue;
+
+typedef Queue * pQueue;
+
+typedef struct tagStack
+{
+	pQueueNode head;
+	int size;
+	int maxSize;
+
+} Stack;
+
+typedef Stack * pStack;
+
+
+//Вспомогательные функции
+int **readMatrixFromFile(char *filename, int *V, int *E)
+{
+	FILE * file;
+	if ((file = fopen(filename, "r")) == NULL)
+	{
+		puts("Unable to open a file\n");
+		return NULL;
+	}
+	else
+	{
+		char data[SHRT_MAX];
+		int _V = 0;
+		int _E = 0;
+
+		int **graph = NULL;
+		int posY = 0;
+		int i = 0;
+
+		printf("Result: \n");
+
+		while (!feof(file))
+		{
+			if (fgets(data, SHRT_MAX - 2, file))
+			{
+				int posX = 0;
+				if (_V == 0)
+				{
+					_V = atoi(data);
+					graph = (int **)malloc(_V * sizeof(int *));
+					for (i = 0; i < _V; i++)
+						graph[i] = (int *)malloc(_V * sizeof(int));
+					continue;
+				}
+
+				for (int i = 0; i < strlen(data); i++)
+				{
+					char elem[SHRT_MAX];
+					int j = 0;
+					while (data[i] != ' ' && data[i] != '\0')
+					{
+						elem[j++] = data[i++];
+					}
+					elem[j] = '\0';
+
+					int value = atoi(elem);
+					if (value > 0)
+					{
+						_E++;
+					}
+					graph[posY][posX] = value;
+					posX++;
+				}
+				posY++;
+			}
+		}
+		fclose(file);
+
+		printf("\nThe graph has %d vertices and %d edges\n", _V, _E);
+		*V = _V;
+		*E = _E;
+		return graph;
+	}
+};
+
+void printGraph(int **graph, int vertexs)
+{
+	for (int i = 0; i < vertexs; i++)
+	{
+		printf("%4d vertex - ", i);
+		for (int j = 0; j < vertexs; j++)
+			printf("%d ", graph[i][j]);
+		printf("\n");
+	}
+};
+
+void freeGraph(int **graph, int vertexs)
+{
+	if (graph != NULL)
+	{
+		for (int i = vertexs - 1; i > 0; i--)
+		{
+			free(graph[i]);
+			graph[i] = NULL;
+		}
+		free(graph);
+	}
+};
+
+
+void initStack(pStack stack);
+
+void initQueue(pQueue queue)
+{
+	queue->maxSize = 100;
+	queue->size = 0;
+	queue->front = NULL;
+	queue->back = NULL;
+};
+
+bool findQueue(pQueue queue, int num)
+{
+	pQueueNode current = queue->front;
+	while (current != NULL)
+	{
+		if (current->num == num)
+			return true;
+		current = current->next;
+	}
+	return false;
+};
+
+void Enqueue(pQueue queue, int *value)
+{
+	if (queue->size == queue->maxSize)
+	{
+		printf("The queue is full, need more memory.\n");
+		return;
+	}
+	pQueueNode tmp = (pQueueNode)malloc(sizeof(QueueNode));
+
+	if (tmp == NULL)
+	{
+		printf("Failed to allocate additional memory.\n");
+		return;
+	}
+	tmp->num = *value;
+	tmp->next = NULL;
+
+	if (queue->size == 0)
+		queue->front = tmp;
+	else
+		queue->back->next = tmp;
+	queue->back = tmp;
+	queue->size++;
+};
+
+void Dequeue(pQueue queue, int *value)
+{
+	if (queue->size == 0)
+	{
+		printf("the queue is empty, need to add some items\n");
+	}
+	pQueueNode first = NULL;
+	*value = queue->front->num;
+	first = queue->front;
+	if (queue->front == queue->back)
+	{
+		queue->back = NULL;
+	}
+	queue->front = queue->front->next;
+	free(first);
+	queue->size--;
+};
+
+void BFS(pQueue queue, pQueue queueUsed, int numNode, int **graph, int vertexs)
+{
+	printf("Visited %d vertex\n", numNode);
+	Enqueue(queueUsed, &numNode);
+
+	int *row = graph[numNode];
+
+	for (int i = 0; i < vertexs; i++)
+	{
+		if ((row[i] > 0) && (findQueue(queueUsed, i) == false) && (findQueue(queue, i) == false))
+		{
+			int val = i;
+			printf("- Added %d to the queue\n", i);
+			Enqueue(queue, &val);
+		}
+	}
+
+	if (queue->size > 0) {
+		int nextNum;
+		Dequeue(queue, &nextNum);
+		if ((findQueue(queueUsed, nextNum) == false) && (findQueue(queue, nextNum) == false))
+			BFS(queue, queueUsed, nextNum, graph, vertexs);
+	}
+};
+
+
+
+void initStack(pStack stack)
+{
+	stack->maxSize = 100;
+	stack->size = 0;
+	stack->head = NULL;
+};
+
+bool findStack(pStack queue, int num)
+{
+	pQueueNode current = queue->head;
+	while (current != NULL)
+	{
+		if (current->num == num)
+			return true;
+		current = current->next;
+	}
+	return false;
+};
+
+void push(pStack stack, int *value)
+{
+	if (stack->size == stack->maxSize)
+	{
+		printf("The stack is overflown, need more memory\n");
+		return;
+	}
+	pQueueNode tmp = (pQueueNode)malloc(sizeof(QueueNode));
+
+	if (tmp == NULL)
+	{
+		printf("Failed to allocate additional memory.\n");
+		return;
+	}
+	tmp->num = *value;
+	tmp->next = stack->head;
+	stack->head = tmp;
+	stack->size++;
+}
+
+
+void pop(pStack stack, int *value)
+{
+	if (stack->size == 0)
+	{
+		printf("the stack is empty, need to add some items.\n");
+		return;
+	}
+	pQueueNode next = NULL;
+	*value = stack->head->num;
+	next = stack->head;
+	stack->head = stack->head->next;
+	free(next);
+	stack->size--;
+};
+
+
+void DFS(pStack stack, pQueue queueUsed, int numNode, int **graph, int vertexs)
+{
+	printf("Visited %d vertex\n", numNode);
+	Enqueue(queueUsed, &numNode);
+
+	int *row = graph[numNode];
+
+	for (int i = 0; i < vertexs; i++)
+	{
+		if ((row[i] > 0) && (findQueue(queueUsed, i) == false) && (findStack(stack, i) == false))
+		{
+			int val = i;
+			printf("- Added %d to the queue\n", i);
+			push(stack, &val);
+			DFS(stack, queueUsed, val, graph, vertexs);
+
+			int temp;
+			pop(stack, &temp);
+		}
+	}
+};
+
+
+
+
+//1. Написать функции, которые считывают матрицу смежности из файла и выводят ее на экран.
+int main()
+{
+	char filename[SHRT_MAX];
+
+	printf("\n A file contains data to read: ");
+	scanf("%s", filename);
+
+	int V = 0;
+	int E = 0;
+
+	int **graph = readMatrixFromFile(filename, &V, &E);
+	printGraph(graph, V);
+	freeGraph(graph, V);
+	return 0;
+};
+
+
+//2. Написать рекурсивную функцию обхода графа в глубину.
+int main()
+{
+	char filename[SHRT_MAX];
+
+	printf("\nA file contains data to read: ");
+	scanf("%s", filename);
+
+	int V = 0; // число вершин
+	int E = 0; // число ребер
+
+	int startVertex = 0;
+
+	int **graph = readMatrixFromFile(filename, &V, &E);
+	printGraph(graph, V);
+
+	pStack stack = (pStack)malloc(sizeof(Stack));
+	initStack(stack);
+	pQueue queueUsed = (pQueue)malloc(sizeof(Queue));
+	initQueue(queueUsed);
+
+	DFS(stack, queueUsed, startVertex, graph, V);
+
+	free(stack);
+	freeGraph(graph, V);
+	return 0;
+}
+
+
+//3. Написать функцию обхода графа в ширину.
+int main()
+{
+	char filename[SHRT_MAX];
+
+	printf("\nA file contains data to read: ");
+	scanf("%s", filename);
+
+	int V = 0;
+	int E = 0;
+
+	int startVertex = 0;
+
+	int **graph = readMatrixFromFile(filename, &V, &E);
+	printGraph(graph, V);
+
+	pQueue queue = (pQueue)malloc(sizeof(Queue));
+	initQueue(queue);
+	pQueue queueUsed = (pQueue)malloc(sizeof(Queue));
+	initQueue(queueUsed);
+
+	BFS(queue, queueUsed, startVertex, graph, V);
+
+	free(queue);
+	freeGraph(graph, V);
+	return 0;
+};
