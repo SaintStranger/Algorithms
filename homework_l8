@@ -1,0 +1,535 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <math.h>
+#include <time.h>
+#include <limits.h>
+
+const int MAX_ELEMENTS = 10000;
+const int MIN_VALUE = -1000;
+const int MAX_VALUE = 1000;
+
+typedef char * T;
+
+typedef struct tagNode * pNode;
+
+typedef struct tagNode 
+{
+	int key;
+	T data;
+	pNode next;
+} Node;
+
+
+
+void showArray(FILE *fout, char* message, int *array, int N)
+{
+	fprintf(fout, "%s\n[", message);
+	for (int i = 0; i < N; i++)
+		fprintf(fout, ((i == 0) ? "%d" : ", %d"), array[i]);
+	fprintf(fout, "]\n");
+};
+
+void showArrayNode(FILE *fout, char* message, pNode *array, int N)
+{
+	fprintf(fout, "%s\n[", message);
+	for (int i = 0; i < N; i++)
+		fprintf(fout, ((i == 0) ? "(%d, %c)" : ", (%d, %c)"), array[i]->key, array[i]->data);
+	fprintf(fout, "]\n");
+};
+
+int *getArrayFromRand(int N)
+{
+	int *arr = (int *)malloc(MAX_ELEMENTS * sizeof(int));
+	for (int i = 0; i < N; i++)
+		arr[i] = (rand() % (MAX_VALUE - MIN_VALUE + 1)) + MIN_VALUE;
+	return arr;
+};
+
+
+void showAnalitics(FILE *fout, int N, int k, double time)
+{
+	fprintf(fout, "\nNumber of elements: %d\nNumber of comparisons: %d\nTime: %lf\n", N, k, time);
+	fprintf(fout, "n^2 = %lf\nn*log(n) = %lf\n\n", pow(N, 2), (N * log(N) / log(exp(1))));
+};
+
+
+void swap(int * p, int * q)
+{
+	int buf;
+	buf = *p;
+	*p = *q;
+	*q = buf;
+};
+
+
+
+// Сортировка подсчетом
+void countingSort(int *array, int n, int minValue, int maxValue)
+{
+	int k = maxValue - minValue + 1;
+	int *countArr = (int *)malloc(k * sizeof(int));
+	int i, j;
+	for (i = 0; i < k; i++)
+		countArr[i] = 0;
+
+	for (i = 0; i < n; i++)
+		countArr[array[i] - minValue]++;
+	
+	int b = 0;
+	for (j = 0; j < k; j++)
+	{
+		int countRep = countArr[j];
+		if (countRep > 0)
+		{
+			for (i = 0; i < countRep; i++)
+			{
+				array[b++] = j + minValue;
+			}
+		}
+	}
+
+	free(countArr);
+};
+
+
+// Быстрая сортировка
+void quickSort(int *array, int first, int last, int *k)
+{
+	int i = first, j = last, x = array[(first + last) / 2];
+	do
+	{
+		while (array[i] < x)
+		{
+			i++;
+			*k = *k + 1;
+		}
+		while (array[j] > x)
+		{
+			j--;
+			*k = *k + 1;
+		}
+		*k = *k + 1;
+		if (i <= j)
+		{
+			*k = *k + 1;
+			if (array[i] > array[j])
+				swap(&array[i], &array[j]);
+			i++;
+			j--;
+		}
+		*k = *k + 1;
+	} while (i <= j);
+	*k = *k + 1;
+	if (i < last)
+		quickSort(array, i, last, k);
+	*k = *k + 1;
+	if (first < j)
+		quickSort(array, first, j, k);
+};
+
+
+//Сортировка слиянием
+void mergeSort(int *array, int l, int r, int *k)
+{
+	*k = *k + 1;
+	if (l == r) return;		
+	int m = (l + r) / 2;	
+							
+	mergeSort(array, l, m, k);
+	mergeSort(array, m + 1, r, k);
+
+	int lp = l;
+	int rp = m + 1;
+	int i;
+	int count = (r - l + 1);
+
+	int *tmp = (int *)malloc(count*sizeof(int));
+	
+	for (i = 0; i < count; i++)
+	{
+
+		*k = *k + 1;
+		if ((rp > r) || ((lp <= m) && (array[lp] < array[rp])))
+		{
+			tmp[i] = array[lp];
+			lp++;
+		}
+		else
+		{
+			tmp[i] = array[rp];
+			rp++;
+		}
+	}
+
+	for (i = 0; i < count; i++)
+		array[l + i] = tmp[i];
+	
+	free(tmp);
+};
+
+//Алгоритм со списком
+void pigeonholeSort(pNode *array, int n, int minValue, int maxValue)
+{
+	int k = maxValue - minValue + 1;
+	pNode *countArr = (pNode *)malloc(k * sizeof(Node));
+	int i;
+	
+	for (i = 0; i < k; i++)
+		countArr[i] = NULL;
+
+	for (i = 0; i < n; i++) 
+	{
+		pNode node = countArr[array[i]->key - minValue];
+		if (node == NULL)
+			countArr[array[i]->key - minValue] = array[i];
+		else
+		{
+			while (node->next != NULL)
+				node = node->next;
+			node->next = array[i];
+		}
+	}
+	
+	int	b = 0;
+	
+	for (i = 0; i < k; i++)
+	{
+		pNode p = countArr[i];
+		while (p != NULL)
+		{
+			array[b] = p;
+			b++;
+			p = p->next;
+			if(p != NULL)
+				array[b]->next = NULL;
+		}
+	}
+	free(countArr);
+};
+
+// Алгоритм пузырьковой сортировки
+int bubbleSort(int *a, int n)
+{
+	int count = 0;
+	int j = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (j = 0; j < n - 1; j++)
+		{
+
+			count++;
+			if (a[j] > a[j + 1])
+			{
+
+				count++;
+				swap(&a[j], &a[j + 1]);
+			}
+		}
+	}
+	return count;
+};
+
+/* Шейкер-сортировка */
+int shakerSort(int *a, int n)
+{
+	int left = 0,
+		right = n - 1,
+		count = 0;
+
+	while (left <= right)
+	{
+		for (int i = left; i < right; i++)
+		{
+			count++;
+			if (a[i] > a[i + 1]) {
+				count++;
+				swap(&a[i], &a[i + 1]);
+			}
+		}
+		right--;
+
+		for (int i = right; i > left; i--)
+		{
+			count++;
+			if (a[i - 1] > a[i]) {
+				count++;
+				swap(&a[i], &a[i - 1]);
+			}
+		}
+		left++;
+	}
+	return count;
+};
+
+// Сортировка Шелла
+int shellsSort(int *a, int n)
+{
+	int i, j, k, count = 0;
+	int t;
+	for (k = n / 2; k > 0; k /= 2)
+		for (i = k; i < n; i++)
+		{
+			t = a[i];
+			for (j = i; j >= k; j -= k)
+			{
+				count++;
+				if (t < a[j - k])
+					a[j] = a[j - k];
+				else
+					break;
+			}
+			a[j] = t;
+		}
+	return count;
+};
+
+
+
+int heapSort(int * a, int n)
+{
+	int i, m, t = n - 1, k;
+	m = n / 2; 
+	for (i = m; i >= 1; i--)
+	{
+		if (a[i - 1] < a[2 * i - 1]) 
+			swap(&a[i - 1], &a[2 * i - 1]);
+		if (2 * i < n && a[i - 1] < a[2 * i]) 
+			swap(&a[i - 1], &a[2 * i]);
+	}
+	k = 2 * m;
+	swap(&a[0], &a[t]);
+	t--;
+	while (t > 0)
+	{
+		m = t / 2;
+
+			for (i = m; i >= 1; i--)
+			{ 
+				if (a[i - 1] < a[2 * i - 1])
+					swap(&a[i - 1], &a[2 * i - 1]);
+				if (2 * i < n && a[i - 1] < a[2 * i])
+					swap(&a[i - 1], &a[2 * i]);
+			}
+		k += 2 * m;
+		swap(&a[0], &a[t]);
+		t--;
+	}
+	if (n > 0 && a[0] > a[1])
+		swap(&a[0], &a[1]);
+	k++;
+	return k;
+};
+
+
+
+//1. Реализовать сортировку подсчетом.
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputCounting.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	double t1 = 0, t2 = 0;
+	t1 = clock();
+	countingSort(arr, N, MIN_VALUE, MAX_VALUE);
+	t2 = clock();
+	showAnalitics(fout, N, 0, t2 - t1);
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+
+//2. Реализовать быструю сортировку.
+int main()
+{
+	int N = 0;
+	
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);	
+
+	FILE *fout = fopen("outputQuick.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	int k = 0;
+	time_t start, end;
+	time(&start);
+	quickSort(arr, 0, N - 1, &k);
+	time(&end);
+	showAnalitics(fout, N, k, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+
+//3. Реализовать сортировку слиянием.
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputMerge.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	int k = 0;
+	time_t start, end;
+	time(&start);
+	mergeSort(arr, 0, N-1, &k);
+	time(&end);
+	showAnalitics(fout, N, k, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+
+//4. Реализовать алгоритм сортировки со списком.
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	int i;
+	pNode *arrNodes = (pNode *)malloc(N * sizeof(Node));
+	for (i = 0; i < N; i++)
+	{
+		pNode node = (pNode)malloc(sizeof(Node));
+		node->key = arr[i];
+		T randData = (char *)malloc(sizeof(char));
+		*randData = (char)(rand() % CHAR_MAX);
+		node->data = randData;
+		node->next = NULL;
+		arrNodes[i] = node;
+	}
+
+	FILE *fout = fopen("outputPigeOnHole.txt", "w");
+	showArrayNode(fout, "Original array:", arrNodes, N);
+	int k = 0;
+	time_t start, end;
+	time(&start);
+	pigeonholeSort(arrNodes, N, MIN_VALUE, MAX_VALUE);
+	time(&end);
+	showAnalitics(fout, N, k, difftime(end, start));
+	showArrayNode(fout, "Sorted array:", arrNodes, N);
+	fclose(fout);
+	for (i = 0; i < N; i++) 
+	{
+		free(arrNodes[i]->data);
+		free(arrNodes[i]);
+	}
+	free(arrNodes);
+	free(arr);
+
+    return 0;
+};
+
+
+
+// Пузырьковая сортировка
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputBubble.txt", "w");
+	showArray(fout, "Исходный массив:", arr, N);
+	time_t start, end;
+	time(&start);
+	int res = bubbleSort(arr, N);
+	time(&end);
+	showAnalitics(fout, N, res, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+// Шейкерная сортировка
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputShaker.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	time_t start, end;
+	time(&start);
+	int res = shakerSort(arr, N);
+	time(&end);
+	showAnalitics(fout, N, res, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+// Cортировка Шелла
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputShells.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	time_t start, end;
+	time(&start);
+	int res = shellsSort(arr, N);
+	time(&end);
+	showAnalitics(fout, N, res, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
+
+// Пирамидальная сортировка
+int main()
+{
+	int N = 0;
+
+	// рандом генератор
+	N = MAX_ELEMENTS;
+	int *arr = getArrayFromRand(N);
+
+	FILE *fout = fopen("outputHeap.txt", "w");
+	showArray(fout, "Original array:", arr, N);
+	time_t start, end;
+	time(&start);
+	int res = heapSort(arr, N);
+	time(&end);
+	showAnalitics(fout, N, res, difftime(end, start));
+	showArray(fout, "Sorted array:", arr, N);
+	fclose(fout);
+	free(arr);
+
+    return 0;
+};
